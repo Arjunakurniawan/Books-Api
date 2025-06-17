@@ -21,8 +21,9 @@ model Book {
   description String?    @db.Text
   image       String     @db.VarChar(255)
   price       Float
-  stock       Int
+  stock       Int        @default(0)
   createdAt   DateTime   @default(now())
+  deletedAt   DateTime? 
   categories  Category[]
 }
 

@@ -55,8 +55,26 @@ app.delete<string, { id: string }, apiResponse<null>>(
         status: "success",
       });
       console.log(
-        `book id:${bookDelete.id} name:${bookDelete.name} is softDeleted`
+        `id:${bookDelete.id} BookName:${bookDelete.name} is softDeleted`
       );
+    } catch (err) {
+      console.error(err);
+    }
+  }
+);
+
+app.put<string, { id: string }, apiResponse<null>>(
+  "/book/:id",
+  async (req, res) => {
+    try {
+      const bookUpdate = await prisma.book.update({
+        where: { id: req.params.id },
+        data: req.body,
+      });
+      console.log(
+        `update Successfull  id: ${bookUpdate.id}  book: ${bookUpdate.name}`
+      );
+      res.status(200).json({ data: null, status: "success" });
     } catch (err) {
       console.error(err);
     }

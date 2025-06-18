@@ -23,7 +23,8 @@ model Book {
   price       Float
   stock       Int        @default(0)
   createdAt   DateTime   @default(now())
-  deletedAt   DateTime? 
+  updateAt    DateTime   @updatedAt
+  deletedAt   DateTime?
   categories  Category[]
 }
 

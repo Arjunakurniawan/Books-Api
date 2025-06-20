@@ -1,11 +1,26 @@
 import { PrismaClient } from "../generated/prisma/client";
 import express from "express";
-import type { apiResponse, book, bookResponse } from "../types/type";
+import type {
+  apiResponse,
+  book,
+  bookResponse,
+  category,
+  categoryResponse,
+} from "../types/type";
 
 const prisma = new PrismaClient();
 
 const app = express();
+app.use((req, res, next) => {
+  if (["POST", "PUT", "PATCH"].includes(req.method)) {
+    express.json()
+    (req, res, next);
+  } else {
+    next();
+  }
+});
 
+// books Response
 app.get<string, null, apiResponse<book[]>>("/books", async (_, res) => {
   try {
     const books = await prisma.book.findMany({
@@ -19,8 +34,6 @@ app.get<string, null, apiResponse<book[]>>("/books", async (_, res) => {
     console.error(err);
   }
 });
-
-app.use(express.json());
 
 app.post<string, null, apiResponse<null>, bookResponse>(
   "/book/create",
@@ -75,6 +88,43 @@ app.put<string, { id: string }, apiResponse<null>>(
         `update Successfull  id: ${bookUpdate.id}  book: ${bookUpdate.name}`
       );
       res.status(200).json({ data: null, status: "success" });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+);
+
+// Categories Response
+app.get<string, null, apiResponse<category[]>>(
+  "/categories",
+  async (_, res) => {
+    try {
+      const categories = await prisma.category.findMany({
+        where: { deletedAt: null },
+      });
+
+      res.status(200).json({
+        data: categories,
+        status: "success",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+);
+
+app.post<string, null, apiResponse<null>, categoryResponse>(
+  "/category/create",
+  async (req, res) => {
+    try {
+      const categoryCreate = await prisma.category.createMany({
+        data: req.body,
+      });
+      res.status(200).json({
+        data: null,
+        status: "success",
+      });
+      console.log("success created", categoryCreate);
     } catch (err) {
       console.error(err);
     }

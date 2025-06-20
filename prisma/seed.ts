@@ -9,8 +9,21 @@ async function main() {
   for (const book of books) {
     const upsertedBook = await prisma.book.upsert({
       where: { name: book.name },
-      update: book,
-      create: book,
+      update: {
+        name: book.name,
+        description: book.description,
+        image: book.image,
+        price: book.price,
+        stock: book.stock,
+      },
+      create: {
+        name: book.name,
+        description: book.description,
+        image: book.image,
+        price: book.price,
+        stock: book.stock,
+        categoryId: book.categoryId,
+      },
     });
     console.log("seeding completed....", upsertedBook);
   }

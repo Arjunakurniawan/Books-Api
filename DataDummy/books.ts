@@ -5,6 +5,7 @@ export const books = [
     image: "https://source.unsplash.com/400x400/?book,habits",
     price: 150000,
     stock: 20,
+    categoryId: "2ca7cff8-fa03-4799-bfdf-df6494d130ff",
   },
   {
     name: "Deep Work",
@@ -12,6 +13,7 @@ export const books = [
     image: "https://source.unsplash.com/400x400/?book,focus",
     price: 130000,
     stock: 15,
+    categoryId: "2ca7cff8-fa03-4799-bfdf-df6494d130ff",
   },
   {
     name: "The Subtle Art of Not Giving a F*ck",
@@ -19,6 +21,7 @@ export const books = [
     image: "https://source.unsplash.com/400x400/?book,motivation",
     price: 120000,
     stock: 30,
+    categoryId: "2ca7cff8-fa03-4799-bfdf-df6494d130ff",
   },
   {
     name: "Sapiens",
@@ -26,6 +29,7 @@ export const books = [
     image: "https://source.unsplash.com/400x400/?book,history",
     price: 170000,
     stock: 12,
+    categoryId: "2ca7cff8-fa03-4799-bfdf-df6494d130ff",
   },
   {
     name: "1984",
@@ -33,6 +37,7 @@ export const books = [
     image: "https://source.unsplash.com/400x400/?book,dystopian",
     price: 100000,
     stock: 22,
+    categoryId: "fc1079ea-9b97-4dda-ba71-8d28e779b79b",
   },
   {
     name: "The Alchemist",
@@ -40,6 +45,7 @@ export const books = [
     image: "https://source.unsplash.com/400x400/?book,journey",
     price: 95000,
     stock: 18,
+    categoryId: "fc1079ea-9b97-4dda-ba71-8d28e779b79b",
   },
   {
     name: "Rich Dad Poor Dad",
@@ -47,6 +53,7 @@ export const books = [
     image: "https://source.unsplash.com/400x400/?book,finance",
     price: 125000,
     stock: 14,
+    categoryId: "02d7303d-766d-42e7-a2da-3d3397f53deb",
   },
   {
     name: "Thinking, Fast and Slow",
@@ -54,6 +61,7 @@ export const books = [
     image: "https://source.unsplash.com/400x400/?book,psychology",
     price: 160000,
     stock: 10,
+    categoryId: "2ca7cff8-fa03-4799-bfdf-df6494d130ff",
   },
   {
     name: "To Kill a Mockingbird",
@@ -61,6 +69,7 @@ export const books = [
     image: "https://source.unsplash.com/400x400/?book,classic",
     price: 110000,
     stock: 19,
+    categoryId: "fc1079ea-9b97-4dda-ba71-8d28e779b79b",
   },
   {
     name: "Ikigai",
@@ -68,5 +77,6 @@ export const books = [
     image: "https://source.unsplash.com/400x400/?book,japanese",
     price: 105000,
     stock: 25,
+    categoryId: "2ca7cff8-fa03-4799-bfdf-df6494d130ff",
   },
 ];

@@ -13,8 +13,7 @@ const prisma = new PrismaClient();
 const app = express();
 app.use((req, res, next) => {
   if (["POST", "PUT", "PATCH"].includes(req.method)) {
-    express.json()
-    (req, res, next);
+    express.json()(req, res, next);
   } else {
     next();
   }
@@ -127,6 +126,29 @@ app.post<string, null, apiResponse<null>, categoryResponse>(
       console.log("success created", categoryCreate);
     } catch (err) {
       console.error(err);
+    }
+  }
+);
+
+app.delete<string, { id: string }, apiResponse<null>>(
+  "/category/:id",
+  async (req, res) => {
+    try {
+      const categoryDelete = await prisma.category.update({
+        where: { id: req.params.id },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+      console.log(
+        `category id:${categoryDelete.id} name:${categoryDelete.name} is soft deleted`
+      );
+      res.status(200).json({
+        data: null,
+        status: "success",
+      });
+    } catch (err) {
+      console.log(err);
     }
   }
 );

@@ -34,6 +34,22 @@ app.get<string, null, apiResponse<book[]>>("/books", async (_, res) => {
   }
 });
 
+app.get<string, { id: string }, apiResponse<book | null>>(
+  "/book/:id",
+  async (req, res) => {
+    const booksById = await prisma.book.findFirstOrThrow({
+      where: { id: req.params.id, deletedAt: null },
+      include: {
+        categories: true,
+      },
+    });
+    res.status(200).json({
+      data: booksById,
+      status: "success",
+    });
+  }
+);
+
 app.post<string, null, apiResponse<null>, bookResponse>(
   "/book/create",
   async (req, res) => {
@@ -112,6 +128,19 @@ app.get<string, null, apiResponse<category[]>>(
   }
 );
 
+app.get<string, { id: string }, apiResponse<category | null>>(
+  "/category/:id",
+  async (req, res) => {
+    const categoryById = await prisma.category.findFirstOrThrow({
+      where: { id: req.params.id, deletedAt: null },
+    });
+    res.status(200).json({
+      data: categoryById,
+      status: "success",
+    });
+  }
+);
+
 app.post<string, null, apiResponse<null>, categoryResponse>(
   "/category/create",
   async (req, res) => {
@@ -150,6 +179,22 @@ app.delete<string, { id: string }, apiResponse<null>>(
     } catch (err) {
       console.log(err);
     }
+  }
+);
+
+app.put<string, { id: string }, apiResponse<null>>(
+  "/category/:id",
+  async (req, res) => {
+    const categoryUpdate = await prisma.category.updateMany({
+      where: { id: req.params.id },
+      data: req.body,
+    });
+
+    console.log("updated successfull", categoryUpdate);
+    res.status(200).json({
+      data: null,
+      status: "success",
+    });
   }
 );
 

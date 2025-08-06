@@ -22,8 +22,8 @@ model Book {
   image       String   @db.VarChar(255)
   price       Float
   stock       Int      @default(0)
-  categoryId  String
-  categories  Category @relation(fields: [categoryId], references: [id])
+  categoryId  String //foreign key
+  category    Category @relation(fields: [categoryId], references: [id])
 
   createdAt DateTime  @default(now())
   updateAt  DateTime  @updatedAt

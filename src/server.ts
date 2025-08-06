@@ -22,11 +22,19 @@ app.use((req, res, next) => {
 // books Response
 app.get<string, null, apiResponse<book[]>>("/books", async (_, res) => {
   try {
-    const books = await prisma.book.findMany({
+    const booksData = await prisma.book.findMany({
       where: { deletedAt: null },
+      include: {
+        category: {
+          select: {
+            name: true,
+        },
+        },
+      },
     });
+
     res.status(200).json({
-      data: books,
+      data: booksData,
       status: "success",
     });
   } catch (err) {

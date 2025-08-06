@@ -20,7 +20,6 @@ export type bookResponse = {
   price: number;
   stock: number;
   categoryId: string;
-  category: categoryResponse | null;
 };
 
 export type categoryResponse = {

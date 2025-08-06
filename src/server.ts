@@ -28,7 +28,7 @@ app.get<string, null, apiResponse<book[]>>("/books", async (_, res) => {
         category: {
           select: {
             name: true,
-        },
+          },
         },
       },
     });
@@ -48,7 +48,11 @@ app.get<string, { id: string }, apiResponse<book | null>>(
     const booksById = await prisma.book.findFirstOrThrow({
       where: { id: req.params.id, deletedAt: null },
       include: {
-        categories: true,
+        category: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
     res.status(200).json({

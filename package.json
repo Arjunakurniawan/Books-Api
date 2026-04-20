@@ -20,6 +20,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "7",
+    "@types/express": "^5.0.6",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "pg": "^8.20.0",

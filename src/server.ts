@@ -1,4 +1,3 @@
-import { PrismaClient } from "../generated/prisma/client";
 import express from "express";
 import type {
   apiResponse,
@@ -7,8 +6,7 @@ import type {
   category,
   categoryResponse,
 } from "../types/type";
-
-const prisma = new PrismaClient();
+import { prisma } from "../lib/prisma"
 
 const app = express();
 app.use((req, res, next) => {
@@ -20,10 +18,16 @@ app.use((req, res, next) => {
 });
 
 // books Response
-app.get<string, null, apiResponse<book[]>>("/books", async (_, res) => {
+app.get<string, null, apiResponse<book[]>>("/books", async (req, res) => {
   try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
     const booksData = await prisma.book.findMany({
       where: { deletedAt: null },
+      skip,
+      take: limit,
       include: {
         category: {
           select: {
@@ -33,9 +37,19 @@ app.get<string, null, apiResponse<book[]>>("/books", async (_, res) => {
       },
     });
 
+    const total = await prisma.book.count({
+      where: { deletedAt: null },
+    });
+    console.log(`Total books: ${total}`);
+
     res.status(200).json({
       data: booksData,
       status: "success",
+      total,
+      pagination: {
+        page,
+        limit,
+      },
     });
   } catch (err) {
     console.error(err);
@@ -55,9 +69,11 @@ app.get<string, { id: string }, apiResponse<book | null>>(
         },
       },
     });
+
     res.status(200).json({
       data: booksById,
       status: "success",
+      total: 1,
     });
   }
 );
@@ -69,9 +85,15 @@ app.post<string, null, apiResponse<null>, bookResponse>(
       const bookCreate = await prisma.book.create({
         data: req.body,
       });
+
+      const total = await prisma.book.count({
+        where: { deletedAt: null },
+      });
+
       res.status(200).json({
         data: null,
         status: "success",
+        total,
       });
       console.log("create is completed", bookCreate);
     } catch (err) {
@@ -93,6 +115,7 @@ app.delete<string, { id: string }, apiResponse<null>>(
       res.status(200).json({
         data: null,
         status: "success",
+        total: 1,
       });
       console.log(
         `id:${bookDelete.id} BookName:${bookDelete.name} is softDeleted`
@@ -114,7 +137,7 @@ app.put<string, { id: string }, apiResponse<null>>(
       console.log(
         `update Successfull  id: ${bookUpdate.id}  book: ${bookUpdate.name}`
       );
-      res.status(200).json({ data: null, status: "success" });
+      res.status(200).json({ data: null, status: "success", total: 1 });
     } catch (err) {
       console.error(err);
     }
@@ -130,9 +153,13 @@ app.get<string, null, apiResponse<category[]>>(
         where: { deletedAt: null },
       });
 
+      const total = categories.length.valueOf();
+      console.log(`Total categories: ${total}`);
+
       res.status(200).json({
         data: categories,
         status: "success",
+        total,
       });
     } catch (err) {
       console.error(err);
@@ -149,6 +176,7 @@ app.get<string, { id: string }, apiResponse<category | null>>(
     res.status(200).json({
       data: categoryById,
       status: "success",
+      total: 1,
     });
   }
 );
@@ -163,6 +191,7 @@ app.post<string, null, apiResponse<null>, categoryResponse>(
       res.status(200).json({
         data: null,
         status: "success",
+        total: 1,
       });
       console.log("success created", categoryCreate);
     } catch (err) {
@@ -187,6 +216,7 @@ app.delete<string, { id: string }, apiResponse<null>>(
       res.status(200).json({
         data: null,
         status: "success",
+        total: 1,
       });
     } catch (err) {
       console.log(err);
@@ -206,6 +236,7 @@ app.put<string, { id: string }, apiResponse<null>>(
     res.status(200).json({
       data: null,
       status: "success",
+      total: 1,
     });
   }
 );

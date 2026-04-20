@@ -7,12 +7,10 @@
 generator client {
   provider        = "prisma-client-js"
   output          = "../generated/prisma"
-  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Book {
@@ -22,7 +20,7 @@ model Book {
   image       String   @db.VarChar(255)
   price       Float
   stock       Int      @default(0)
-  categoryId  String //foreign key
+  categoryId  String 
   category    Category @relation(fields: [categoryId], references: [id])
 
   createdAt DateTime  @default(now())

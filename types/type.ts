@@ -29,4 +29,9 @@ export type categoryResponse = {
 export type apiResponse<T> = {
   data: T;
   status: string | null;
+  total: number;
+  pagination?: {
+    page: number | null;
+    limit: number | null;
+  };
 };

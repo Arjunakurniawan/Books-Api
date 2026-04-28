@@ -10,7 +10,7 @@ import type {
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { prisma } from "../lib/prisma";
+import { prisma, User } from "../lib/prisma";
 import cookieParser from "cookie-parser";
 import { authMiddleware } from "../middleware/middleware_auth";
 
@@ -20,6 +20,7 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use(authMiddleware);
 
 // register routes
 app.post<string, null, apiResponse<null>, userResponse>(
@@ -113,15 +114,37 @@ app.post<string, null, apiResponse<string | null>, userResponse>(
 );
 
 //endpoint auth in react
-app.get<string, null, apiResponse<string | null>>(
+app.get<string, null, apiResponse<string | null>, userResponse>(
   "/profile",
-  (req, res: express.Response) => {
+  async (req, res: express.Response) => {
     try {
+      const userId = req.user?.id;
+
+      const dataUser = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!dataUser) {
+        return res.status(404).json({
+          data: null,
+          status: "user not found",
+        });
+      }
+
+      const { password, ...loggedinUser }: User = dataUser
+      
+
       res.status(200).json({
-        data: req.user,
+        data: loggedinUser,
         status: "success",
       });
-    } catch (error) {}
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        status: "error",
+      });
+      console.error("Error fetching user profile:", error);
+    }
   },
 );
 

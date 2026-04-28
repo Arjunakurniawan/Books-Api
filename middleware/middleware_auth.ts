@@ -46,4 +46,5 @@ const privateApis = [
   { path: "/book/:id", method: "GET" },
   { path: "/categories", method: "GET" },
   { path: "/category/:id", method: "GET" },
+  { path: "/profile", method: "GET" },
 ];

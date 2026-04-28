@@ -5,17 +5,110 @@ import type {
   bookResponse,
   category,
   categoryResponse,
+  userResponse,
 } from "../types/type";
-import { prisma } from "../lib/prisma"
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { authMiddleware } from "../middleware/middleware_auth";
+import dotenv from "dotenv";
+import { prisma } from "../lib/prisma";
+
+dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
 const app = express();
-app.use((req, res, next) => {
-  if (["POST", "PUT", "PATCH"].includes(req.method)) {
-    express.json()(req, res, next);
-  } else {
-    next();
-  }
-});
+app.use(express.json());
+
+// register routes
+app.post<string, null, apiResponse<null>, userResponse>(
+  "/register",
+  async (req, res) => {
+    try {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          OR: [{ email: req.body.email }, { username: req.body.username }],
+        },
+      });
+
+      if (existingUser) {
+        return res.status(400).json({
+          data: null,
+          status: "existing email and password",
+        });
+      }
+
+      // Hash the password before storing it in the database
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+      const userCreate = await prisma.user.create({
+        data: { ...req.body, password: hashedPassword },
+      });
+
+      console.log("User registration successful", userCreate);
+
+      const total = await prisma.user.count({
+        where: { deletedAt: null },
+      });
+
+      res.status(200).json({ data: null, status: "success", total });
+    } catch (error) {
+      console.error("Error registering user:", error);
+    }
+  },
+);
+
+// login routes
+app.post<string, null, apiResponse<string | null>, userResponse>(
+  "/login",
+  async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      const user = await prisma.user.findFirst({
+        where: { email: email },
+      });
+
+      if (!user) {
+        return res.status(400).json({
+          data: "error",
+          status: "email is incorrect",
+        });
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+      if (!isPasswordValid) {
+        return res.status(400).json({
+          data: "error",
+          status: "password is incorrect",
+        });
+      }
+
+      //payload for JWT token
+      const payload = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      };
+
+      // Generate JWT token
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 3600000,
+      });
+
+      res.status(200).json({
+        data: null,
+        status: "login successfull",
+      });
+    } catch (err) {
+      console.error("Error logging in:", err);
+    }
+  },
+);
 
 // books Response
 app.get<string, null, apiResponse<book[]>>("/books", async (req, res) => {
@@ -75,7 +168,7 @@ app.get<string, { id: string }, apiResponse<book | null>>(
       status: "success",
       total: 1,
     });
-  }
+  },
 );
 
 app.post<string, null, apiResponse<null>, bookResponse>(
@@ -99,7 +192,7 @@ app.post<string, null, apiResponse<null>, bookResponse>(
     } catch (err) {
       console.error(err);
     }
-  }
+  },
 );
 
 app.delete<string, { id: string }, apiResponse<null>>(
@@ -118,12 +211,12 @@ app.delete<string, { id: string }, apiResponse<null>>(
         total: 1,
       });
       console.log(
-        `id:${bookDelete.id} BookName:${bookDelete.name} is softDeleted`
+        `id:${bookDelete.id} BookName:${bookDelete.name} is softDeleted`,
       );
     } catch (err) {
       console.error(err);
     }
-  }
+  },
 );
 
 app.put<string, { id: string }, apiResponse<null>>(
@@ -135,13 +228,13 @@ app.put<string, { id: string }, apiResponse<null>>(
         data: req.body,
       });
       console.log(
-        `update Successfull  id: ${bookUpdate.id}  book: ${bookUpdate.name}`
+        `update Successfull  id: ${bookUpdate.id}  book: ${bookUpdate.name}`,
       );
       res.status(200).json({ data: null, status: "success", total: 1 });
     } catch (err) {
       console.error(err);
     }
-  }
+  },
 );
 
 // Categories Response
@@ -164,7 +257,7 @@ app.get<string, null, apiResponse<category[]>>(
     } catch (err) {
       console.error(err);
     }
-  }
+  },
 );
 
 app.get<string, { id: string }, apiResponse<category | null>>(
@@ -178,7 +271,7 @@ app.get<string, { id: string }, apiResponse<category | null>>(
       status: "success",
       total: 1,
     });
-  }
+  },
 );
 
 app.post<string, null, apiResponse<null>, categoryResponse>(
@@ -197,7 +290,7 @@ app.post<string, null, apiResponse<null>, categoryResponse>(
     } catch (err) {
       console.error(err);
     }
-  }
+  },
 );
 
 app.delete<string, { id: string }, apiResponse<null>>(
@@ -211,7 +304,7 @@ app.delete<string, { id: string }, apiResponse<null>>(
         },
       });
       console.log(
-        `category id:${categoryDelete.id} name:${categoryDelete.name} is soft deleted`
+        `category id:${categoryDelete.id} name:${categoryDelete.name} is soft deleted`,
       );
       res.status(200).json({
         data: null,
@@ -221,7 +314,7 @@ app.delete<string, { id: string }, apiResponse<null>>(
     } catch (err) {
       console.log(err);
     }
-  }
+  },
 );
 
 app.put<string, { id: string }, apiResponse<null>>(
@@ -238,7 +331,7 @@ app.put<string, { id: string }, apiResponse<null>>(
       status: "success",
       total: 1,
     });
-  }
+  },
 );
 
 prisma

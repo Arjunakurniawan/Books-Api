@@ -26,10 +26,25 @@ export type categoryResponse = {
   name: string;
 };
 
+export type user = {
+  id: string;
+  username: string;
+  email: string;
+  password: string;
+  role: string
+}
+
+export type userResponse = {
+  username: string;
+  email: string;
+  password: string;
+  roleId: string;
+}
+
 export type apiResponse<T> = {
   data: T;
   status: string | null;
-  total: number;
+  total?: number;
   pagination?: {
     page: number | null;
     limit: number | null;

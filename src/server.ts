@@ -9,15 +9,17 @@ import type {
 } from "../types/type";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { authMiddleware } from "../middleware/middleware_auth";
 import dotenv from "dotenv";
 import { prisma } from "../lib/prisma";
+import cookieParser from "cookie-parser";
+import { authMiddleware } from "../middleware/middleware_auth";
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 // register routes
 app.post<string, null, apiResponse<null>, userResponse>(
@@ -107,6 +109,19 @@ app.post<string, null, apiResponse<string | null>, userResponse>(
     } catch (err) {
       console.error("Error logging in:", err);
     }
+  },
+);
+
+//endpoint auth in react
+app.get<string, null, apiResponse<string | null>>(
+  "/profile",
+  (req, res: express.Response) => {
+    try {
+      res.status(200).json({
+        data: req.user,
+        status: "success",
+      });
+    } catch (error) {}
   },
 );
 

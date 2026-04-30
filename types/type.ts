@@ -31,15 +31,27 @@ export type user = {
   username: string;
   email: string;
   password: string;
-  role: string
-}
+  role: string;
+};
 
 export type userResponse = {
   username: string;
   email: string;
   password: string;
-  roleId: string;
-}
+  role: string;
+};
+
+export type registerPayload = {
+  username: string;
+  email: string;
+  password: string;
+  role?: string;
+};
+
+export type loginPayload = {
+  email: string;
+  password: string;
+};
 
 export type apiResponse<T> = {
   data: T;
@@ -50,3 +62,7 @@ export type apiResponse<T> = {
     limit: number | null;
   };
 };
+
+export type loginResponse = apiResponse<userResponse>;
+
+export type registerResponse = apiResponse<userResponse>;

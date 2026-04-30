@@ -5,6 +5,10 @@ import type {
   bookResponse,
   category,
   categoryResponse,
+  loginPayload,
+  loginResponse,
+  registerPayload,
+  registerResponse,
   userResponse,
 } from "../types/type";
 import bcrypt from "bcrypt";
@@ -13,18 +17,20 @@ import dotenv from "dotenv";
 import { prisma, User } from "../lib/prisma";
 import cookieParser from "cookie-parser";
 import { authMiddleware } from "../middleware/middleware_auth";
+import cors from "cors";
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 const app = express();
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(authMiddleware);
 
 // register routes
-app.post<string, null, apiResponse<null>, userResponse>(
-  "/register",
+app.post<string, null, apiResponse<null>, registerPayload>(
+  "/auth/register",
   async (req, res) => {
     try {
       const existingUser = await prisma.user.findFirst({
@@ -43,11 +49,11 @@ app.post<string, null, apiResponse<null>, userResponse>(
       // Hash the password before storing it in the database
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
-      const userCreate = await prisma.user.create({
+      const userRegister = await prisma.user.create({
         data: { ...req.body, password: hashedPassword },
       });
 
-      console.log("User registration successful", userCreate);
+      console.log("User registration successful", userRegister);
 
       const total = await prisma.user.count({
         where: { deletedAt: null },
@@ -55,14 +61,14 @@ app.post<string, null, apiResponse<null>, userResponse>(
 
       res.status(200).json({ data: null, status: "success", total });
     } catch (error) {
-      console.error("Error registering user:", error);
+      throw error;
     }
   },
 );
 
 // login routes
-app.post<string, null, apiResponse<string | null>, userResponse>(
-  "/login",
+app.post<string, null, apiResponse<string | null>, loginPayload>(
+  "/auth/login",
   async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -101,6 +107,7 @@ app.post<string, null, apiResponse<string | null>, userResponse>(
         httpOnly: true,
         secure: false,
         maxAge: 3600000,
+        sameSite: "lax",
       });
 
       res.status(200).json({
@@ -131,8 +138,7 @@ app.get<string, null, apiResponse<string | null>, userResponse>(
         });
       }
 
-      const { password, ...loggedinUser }: User = dataUser
-      
+      const { password, ...loggedinUser }: User = dataUser;
 
       res.status(200).json({
         data: loggedinUser,

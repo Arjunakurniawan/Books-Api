@@ -45,7 +45,7 @@ export type registerPayload = {
   username: string;
   email: string;
   password: string;
-  role?: string;
+  role: string;
 };
 
 export type loginPayload = {
@@ -66,3 +66,5 @@ export type apiResponse<T> = {
 export type loginResponse = apiResponse<userResponse>;
 
 export type registerResponse = apiResponse<userResponse>;
+
+export type logoutResponse = apiResponse<null>

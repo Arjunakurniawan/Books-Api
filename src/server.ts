@@ -7,6 +7,7 @@ import type {
   categoryResponse,
   loginPayload,
   loginResponse,
+  logoutResponse,
   registerPayload,
   registerResponse,
   userResponse,
@@ -29,7 +30,7 @@ app.use(cookieParser());
 app.use(authMiddleware);
 
 // register routes
-app.post<string, null, apiResponse<null>, registerPayload>(
+app.post<string, null, apiResponse<string | null>, registerPayload>(
   "/auth/register",
   async (req, res) => {
     try {
@@ -73,14 +74,14 @@ app.post<string, null, apiResponse<string | null>, loginPayload>(
     try {
       const { email, password } = req.body;
 
-      const user = await prisma.user.findFirst({
+      const user = await prisma.user.findUnique({
         where: { email: email },
       });
 
       if (!user) {
-        return res.status(400).json({
-          data: "error",
-          status: "email is incorrect",
+        return res.status(404).json({
+          data: null,
+          status: "account is not registered",
         });
       }
 
@@ -88,7 +89,7 @@ app.post<string, null, apiResponse<string | null>, loginPayload>(
 
       if (!isPasswordValid) {
         return res.status(400).json({
-          data: "error",
+          data: null,
           status: "password is incorrect",
         });
       }
@@ -116,6 +117,30 @@ app.post<string, null, apiResponse<string | null>, loginPayload>(
       });
     } catch (err) {
       console.error("Error logging in:", err);
+    }
+  },
+);
+
+//endpoint logout
+app.post<string, null, apiResponse<null>, logoutResponse>(
+  "/auth/logout",
+  (_, res) => {
+    try {
+      res.clearCookie("token", {
+        httpOnly: true,
+        secure: false,
+        maxAge: 3600000,
+        sameSite: "lax",
+      });
+      res.status(200).json({
+        data:  null, 
+        status: "logout successfull"
+      })
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        status: "error",
+      });
     }
   },
 );

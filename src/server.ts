@@ -133,9 +133,9 @@ app.post<string, null, apiResponse<null>, logoutResponse>(
         sameSite: "lax",
       });
       res.status(200).json({
-        data:  null, 
-        status: "logout successfull"
-      })
+        data: null,
+        status: "logout successfull",
+      });
     } catch (error) {
       res.status(500).json({
         data: null,
@@ -182,12 +182,24 @@ app.get<string, null, apiResponse<string | null>, userResponse>(
 // books Response
 app.get<string, null, apiResponse<book[]>>("/books", async (req, res) => {
   try {
+    const search = req.query;
+
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
     const booksData = await prisma.book.findMany({
-      where: { deletedAt: null },
+      where: {
+        deletedAt: null,
+        OR: [
+          {
+            name: {
+              contains: search.name as string,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
       skip,
       take: limit,
       include: {

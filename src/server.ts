@@ -182,26 +182,34 @@ app.get<string, null, apiResponse<string | null>, userResponse>(
 // books Response
 app.get<string, null, apiResponse<book[]>>("/books", async (req, res) => {
   try {
-    const search = req.query;
+    const searchQuery = req.query.search as string | undefined;
 
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    const booksData = await prisma.book.findMany({
-      where: {
-        deletedAt: null,
-        OR: [
-          {
-            name: {
-              contains: search.name as string,
-              mode: "insensitive",
-            },
+    const whereCondition: any = {
+      deletedAt: null,
+    };
+
+    if (searchQuery) {
+      whereCondition.OR = [
+        {
+          name: {
+            contains: searchQuery,
+            mode: "insensitive",
           },
-        ],
-      },
+        },
+      ];
+    }
+
+    const booksData = await prisma.book.findMany({
+      where: whereCondition,
       skip,
       take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
       include: {
         category: {
           select: {
@@ -321,10 +329,24 @@ app.put<string, { id: string }, apiResponse<null>>(
 // Categories Response
 app.get<string, null, apiResponse<category[]>>(
   "/categories",
-  async (_, res) => {
+  async (req, res) => {
     try {
+      const searchQuery = req.query.search as string | undefined;
+
+      const whereCondition: any = {
+        deletedAt: null,
+      };
+
+      if (searchQuery) {
+        whereCondition.name = {
+          contains: searchQuery,
+          mode: "insensitive",
+        };
+      }
+
       const categories = await prisma.category.findMany({
-        where: { deletedAt: null },
+        where: whereCondition,
+        orderBy: { createAt: "desc" },
       });
 
       const total = categories.length.valueOf();
@@ -336,7 +358,8 @@ app.get<string, null, apiResponse<category[]>>(
         total,
       });
     } catch (err) {
-      console.error(err);
+      console.error("Prisma error GET /categories", err);
+      res.status(500).json({ status: "error", data: [] });
     }
   },
 );

@@ -349,8 +349,9 @@ app.get<string, null, apiResponse<category[]>>(
         orderBy: { createAt: "desc" },
       });
 
-      const total = categories.length.valueOf();
-      console.log(`Total categories: ${total}`);
+      const total = await prisma.category.count({
+        where: { deletedAt: null },
+      });
 
       res.status(200).json({
         data: categories,
